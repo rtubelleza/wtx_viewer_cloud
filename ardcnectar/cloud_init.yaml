@@ -31,9 +31,9 @@ runcmd:
     export OS_PROJECT_DOMAIN_ID={{ OS_PROJECT_DOMAIN_ID }}
     export OS_PROJECT_NAME={{ OS_PROJECT_NAME }}
     env
-    cd /opt/wtx_viewer/deployment/ardcnectar
+    cd /opt/wtx_viewer/ardcnectar
     /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
-    cd /opt/wtx_viewer/deployment
+    cd /opt/wtx_viewer
     docker compose up --build -d
 
 
