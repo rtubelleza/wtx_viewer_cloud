@@ -34,7 +34,6 @@ def render_cloud_init() -> str:
         OS_USER_DOMAIN_NAME=os.environ["OS_USER_DOMAIN_NAME"],
         OS_PROJECT_DOMAIN_ID=os.environ["OS_PROJECT_DOMAIN_ID"],
         OS_PROJECT_NAME=os.environ["OS_PROJECT_NAME"],
-        GITHUB_PAK=os.environ["GITHUB_PAK"] # TODO: remove later once repo public
     )
     
     return cloud_init_instantiated

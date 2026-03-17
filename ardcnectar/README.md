@@ -10,13 +10,19 @@ Contains deployment environment and scripts for deploying the wtx_viewer in on N
 
 # Environmental Variables
 The following environmental variables need to be set:
-- 
+- `OS_AUTH_URL`
+- `OS_USERNAME`
+- `OS_PASSWORD`
+- `OS_PROJECT_ID`
+- `OS_USER_DOMAIN_NAME`
+- `OS_PROJECT_DOMAIN_ID`
+- `OS_PROJECT_NAME`
+
+It is recommended to set these from a `.env` file or by sourcing an OpenStack RC file (i.e. see https://tutorials.rc.nectar.org.au/openstack-cli/04-credentials).
 
 # Usage
-With user credentials and the above environmental variables set:
+With user credentials and the above environmental variables run in this directory:
 
 ```{python}
 uv run deploy.py
 ```
-
-This will launch a compute instance running this wtx_viewer.
