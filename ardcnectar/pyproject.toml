@@ -1,0 +1,18 @@
+[project]
+name = "ardcnectar"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel>=7.2.0",
+    "jinja2>=3.1.6",
+    "python-designateclient>=6.4.0",
+    "python-dotenv>=1.2.2",
+    "python-heatclient>=5.0.0",
+    "python-magnumclient>=4.9.0",
+    "python-novaclient>=18.12.0",
+    "python-openstackclient>=8.3.0",
+    "python-swiftclient>=4.9.0",
+    "pyyaml>=6.0",
+]

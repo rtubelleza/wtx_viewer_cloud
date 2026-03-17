@@ -1,0 +1,39 @@
+#cloud-config
+
+write_files:
+  - path: /etc/env
+
+packages:
+  - docker.io
+  - docker-compose-v2
+  - git
+  - curl
+
+runcmd:
+  # start docker services
+  - systemctl enable docker
+  - systemctl start docker
+  # allow ubuntu user to run docker
+  - usermod -aG docker ubuntu
+
+  # uv + repo
+  - curl -LsSf https://astral.sh/uv/install.sh | env HOME=/root sh
+  - git clone https://github.com/rtubelleza/wtx_viewer_cloud /opt/wtx_viewer
+
+  # generate app credentials and launch app — all in one shell so env vars and CWD persist
+  - |
+    export INSTANCE_NAME=wtx-viewer
+    export OS_AUTH_URL={{ OS_AUTH_URL }}
+    export OS_USERNAME={{ OS_USERNAME }}
+    export OS_PASSWORD={{ OS_PASSWORD }}
+    export OS_PROJECT_ID={{ OS_PROJECT_ID }}
+    export OS_USER_DOMAIN_NAME={{ OS_USER_DOMAIN_NAME }}
+    export OS_PROJECT_DOMAIN_ID={{ OS_PROJECT_DOMAIN_ID }}
+    export OS_PROJECT_NAME={{ OS_PROJECT_NAME }}
+    env
+    cd /opt/wtx_viewer/deployment/ardcnectar
+    /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
+    cd /opt/wtx_viewer/deployment
+    docker compose up --build -d
+
+

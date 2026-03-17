@@ -1,0 +1,18 @@
+# OpenStack instance configuration for wtx-viewer deployment
+
+instance:
+  name: wtx-viewer
+  image: "NeCTAR Ubuntu 22.04 LTS (Jammy) amd64 (with Docker)"
+  flavor: m3.small
+  network: QRIScloud           # openstack network list
+  security_groups: [default, ssh, viewer_ingress]
+  key_name: "fimac2" # TODO: delete
+
+# swift:
+#   auth_url: https://keystone.rc.nectar.org.au/v3/
+#   container: main 
+#   zarr_path: mosaic.zarr
+
+# app:
+#   repo_url: "https://github.com/rtubelleza/wtx_viewer"
+#   egress_port: 8080
