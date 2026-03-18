@@ -10,7 +10,7 @@ import utils
 import json
 
 # env vars; defined as docker vars
-SPATIALDATA_URI = "http://localhost:80/data/zarr"
+SPATIALDATA_URI = "http://localhost:80/zarr"
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "")
 if CONFIG_PATH == "":
     CONFIG_PATH = "../"

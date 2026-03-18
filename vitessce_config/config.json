@@ -9,7 +9,7 @@
       "files": [
         {
           "fileType": "spatialdata.zarr",
-          "url": "http://localhost:80/data/zarr",
+          "url": "http://localhost:80/zarr",
           "options": {
             "obsSets": {
               "obsSets": [
@@ -37,7 +37,7 @@
         },
         {
           "fileType": "spatialdata.zarr",
-          "url": "http://localhost:80/data/zarr",
+          "url": "http://localhost:80/zarr",
           "options": {
             "obsLabels": [
               {
