@@ -9,7 +9,7 @@
       "files": [
         {
           "fileType": "spatialdata.zarr",
-          "url": "http://localhost:80/zarr",
+          "url": "http://viewer.nsclc-spatial-atlas.cloud.edu.au/zarr",
           "options": {
             "obsSets": {
               "obsSets": [
@@ -37,7 +37,7 @@
         },
         {
           "fileType": "spatialdata.zarr",
-          "url": "http://localhost:80/zarr",
+          "url": "http://viewer.nsclc-spatial-atlas.cloud.edu.au/zarr",
           "options": {
             "obsLabels": [
               {
