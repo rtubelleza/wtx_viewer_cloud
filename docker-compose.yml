@@ -3,11 +3,6 @@ services:
     build:
       context: .
       dockerfile: data_config/Dockerfile
-    # environment:
-    #   - OS_AUTH_URL
-    #   - OS_APPLICATION_CREDENTIAL_ID
-    #   - OS_APPLICATION_CREDENTIAL_SECRET
-    #   - OS_PROJECT_ID
     env_file: "/opt/wtx_viewer/app_credentials.env"
 
   viewer_app:
