@@ -22,10 +22,12 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 def render_cloud_init() -> str:
+    cfg = load_config()
+    app_domain = cfg["app"]["app_domain"].rstrip(".")  # strip DNS trailing dot for HTTP URL
+
     with open(CLOUD_INIT) as f:
         template = Template(f.read())
 
-    # substitute env vars
     cloud_init_instantiated = template.render(
         OS_AUTH_URL=os.environ["OS_AUTH_URL"],
         OS_USERNAME=os.environ["OS_USERNAME"],
@@ -34,8 +36,9 @@ def render_cloud_init() -> str:
         OS_USER_DOMAIN_NAME=os.environ["OS_USER_DOMAIN_NAME"],
         OS_PROJECT_DOMAIN_ID=os.environ["OS_PROJECT_DOMAIN_ID"],
         OS_PROJECT_NAME=os.environ["OS_PROJECT_NAME"],
+        APP_DOMAIN=app_domain,
     )
-    
+
     return cloud_init_instantiated
 
 # def ensure_http_security_group() -> str:
@@ -107,13 +110,15 @@ def expose_app(server_ip):
     # add container server as a record set to the project alloc DNS
     # type A = Address record
     # records; IP of container server
+    cfg = load_config()
+    app = cfg["app"]
+    TARGET_ZONE = app["target_zone"]
+    APP_DOMAIN = app["app_domain"]
+    TIME_TO_LIVE = app["ttl"]
+
     dns_client = auth.get_designateclient()
     zones = dns_client.zones.list()
-    
-    TARGET_ZONE = "nsclc-spatial-atlas.cloud.edu.au."
-    APP_DOMAIN = "viewer." + TARGET_ZONE
-    TIME_TO_LIVE = 300 # 300s; TODO: change to higher numbers later
-    
+
     zone = next(z for z in zones if z["name"] == TARGET_ZONE)
     zone_id = zone["id"]
     dns_client.recordsets.create(

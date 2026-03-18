@@ -10,9 +10,9 @@ RUN pip install "setuptools<81"
 RUN pip install "spatialdata==0.5.0"
 RUN pip install "vitessce[all]"
 
-COPY "vitessce_config/src/" "/src"
-WORKDIR "/src"
+COPY src /src
+WORKDIR /src
 
-# Output written to /output/config.json — mount vitessce_config/ there at runtime
 ENV CONFIG_PATH="/output"
+
 CMD ["python", "export_config.py"]

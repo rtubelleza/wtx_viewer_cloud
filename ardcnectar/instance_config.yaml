@@ -3,16 +3,12 @@
 instance:
   name: wtx-viewer
   image: "NeCTAR Ubuntu 22.04 LTS (Jammy) amd64 (with Docker)"
-  flavor: m3.small
-  network: QRIScloud           # openstack network list
+  flavor: m3.small # adjust later 
+  network: QRIScloud
   security_groups: [default, ssh, viewer_ingress]
-  key_name: "fimac2" # TODO: delete
+  key_name: "fimac2" # NOTE: delete once SSH no longer needed for debugging.
 
-# swift:
-#   auth_url: https://keystone.rc.nectar.org.au/v3/
-#   container: main 
-#   zarr_path: mosaic.zarr
-
-# app:
-#   repo_url: "https://github.com/rtubelleza/wtx_viewer"
-#   egress_port: 8080
+app:
+  target_zone: "nsclc-spatial-atlas.cloud.edu.au."   # DNS zone
+  app_domain: "viewer.nsclc-spatial-atlas.cloud.edu.au."  # DNS record set for type A
+  ttl: 300

@@ -33,7 +33,12 @@ runcmd:
     env
     cd /opt/wtx_viewer/ardcnectar
     /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
+
     cd /opt/wtx_viewer
+    docker build -t vitessce-config vitessce_config/
+    docker run --rm \
+      -v /opt/wtx_viewer/vitessce_config:/output \
+      -e SPATIALDATA_URI=http://{{ APP_DOMAIN }}/zarr \
+      vitessce-config
+
     docker compose up --build -d
-
-
