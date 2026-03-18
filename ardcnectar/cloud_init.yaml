@@ -30,7 +30,6 @@ runcmd:
     export OS_USER_DOMAIN_NAME={{ OS_USER_DOMAIN_NAME }}
     export OS_PROJECT_DOMAIN_ID={{ OS_PROJECT_DOMAIN_ID }}
     export OS_PROJECT_NAME={{ OS_PROJECT_NAME }}
-    env
     cd /opt/wtx_viewer/ardcnectar
     /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
 
