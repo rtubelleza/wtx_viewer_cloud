@@ -8,6 +8,7 @@ packages:
   - docker-compose-v2
   - git
   - curl
+  - certbot
 
 runcmd:
   # start docker services
@@ -33,11 +34,27 @@ runcmd:
     cd /opt/wtx_viewer/ardcnectar
     /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
 
+    echo "Waiting for DNS {{ APP_DOMAIN }} to resolve..."
+    until getent hosts {{ APP_DOMAIN }} >/dev/null 2>&1; do
+      sleep 15
+    done
+    echo "DNS resolved."
+
+    certbot certonly --standalone \
+      --non-interactive --agree-tos \
+      --email {{ ADMIN_EMAIL }} \
+      -d {{ APP_DOMAIN }}
+
+    echo '0 3 * * * root certbot renew --quiet --deploy-hook "docker compose -f /opt/wtx_viewer/docker-compose.yml exec -T viewer_app nginx -s reload"' \
+      > /etc/cron.d/certbot-renew
+
+    # generate vitessce config.json before building the stack
     cd /opt/wtx_viewer
     docker build -t vitessce-config vitessce_config/
     docker run --rm \
       -v /opt/wtx_viewer/vitessce_config:/output \
-      -e SPATIALDATA_URI=http://{{ APP_DOMAIN }}/zarr \
+      -e SPATIALDATA_URI=https://{{ APP_DOMAIN }}/zarr \
       vitessce-config
 
+    # launch stack (viewer_app build picks up the generated config.json)
     docker compose up --build -d

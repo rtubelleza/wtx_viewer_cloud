@@ -9,6 +9,7 @@ instance:
   key_name: "fimac2" # NOTE: delete once SSH no longer needed for debugging.
 
 app:
-  target_zone: "nsclc-spatial-atlas.cloud.edu.au."   # DNS zone
-  app_domain: "viewer.nsclc-spatial-atlas.cloud.edu.au."  # DNS record set for type A
+  target_zone: "nsclc-spatial-atlas.cloud.edu.au."
+  app_domain:  "viewer.nsclc-spatial-atlas.cloud.edu.au."
   ttl: 300
+  admin_email: "admin@nsclc-spatial-atlas.cloud.edu.au"

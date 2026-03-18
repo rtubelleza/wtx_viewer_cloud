@@ -23,7 +23,8 @@ def load_config() -> dict:
 
 def render_cloud_init() -> str:
     cfg = load_config()
-    app_domain = cfg["app"]["app_domain"].rstrip(".")  # strip DNS trailing dot for HTTP URL
+    app_domain   = cfg["app"]["app_domain"].rstrip(".")  # strip DNS trailing dot for HTTP URL
+    admin_email  = cfg["app"]["admin_email"]
 
     with open(CLOUD_INIT) as f:
         template = Template(f.read())
@@ -37,6 +38,7 @@ def render_cloud_init() -> str:
         OS_PROJECT_DOMAIN_ID=os.environ["OS_PROJECT_DOMAIN_ID"],
         OS_PROJECT_NAME=os.environ["OS_PROJECT_NAME"],
         APP_DOMAIN=app_domain,
+        ADMIN_EMAIL=admin_email,
     )
 
     return cloud_init_instantiated
