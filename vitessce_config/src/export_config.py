@@ -10,7 +10,7 @@ import utils
 import json
 
 # env vars; defined as docker vars
-SPATIALDATA_URI = os.environ.get("SPATIALDATA_URI", "http://viewer.nsclc-spatial-atlas.cloud.edu.au/zarr")
+SPATIALDATA_URI = os.environ.get("SPATIALDATA_URI", "")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "/output")
 CS = "um_aligned_ltb12_grid" 
 
@@ -284,11 +284,7 @@ def build_config() -> VitessceConfig:
     }, meta=False)
     vc.link_views_by_dict([spatial, layer_controller], {}, meta=True)
     vc.layout(
-        (spatial | (layer_controller / feature_list | (path_obs_sets / cell_obs_sets)))
-        / (
-            (umap_scatter | pca_scatter) 
-            # / heatmap
-        )
+        (spatial | ((layer_controller / feature_list | (path_obs_sets / cell_obs_sets)) / (umap_scatter | pca_scatter) ))
     )
 
     return vc
