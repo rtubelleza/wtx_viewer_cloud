@@ -19,7 +19,7 @@ def main():
 
     app_cred = user_client.application_credentials.create(
         name=APP_CRED_NAME,
-        roles=[{"name": "Reader"}]
+        roles=[{"name": "Member"}]
     )
 
     app_cred_dict = app_cred.to_dict()
