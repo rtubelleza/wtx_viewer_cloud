@@ -1,7 +1,66 @@
 #cloud-config
 
 write_files:
-  - path: /etc/env
+  # generate app credentials for current instance
+  - path: /opt/scripts/01_generate_creds.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      export INSTANCE_NAME=wtx-viewer
+      export OS_AUTH_URL={{ OS_AUTH_URL }}
+      export OS_USERNAME={{ OS_USERNAME }}
+      export OS_PASSWORD={{ OS_PASSWORD }}
+      export OS_PROJECT_ID={{ OS_PROJECT_ID }}
+      export OS_USER_DOMAIN_NAME={{ OS_USER_DOMAIN_NAME }}
+      export OS_PROJECT_DOMAIN_ID={{ OS_PROJECT_DOMAIN_ID }}
+      export OS_PROJECT_NAME={{ OS_PROJECT_NAME }}
+      cd /opt/wtx_viewer/ardcnectar
+      /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
+
+  # wait + check for DNS resolve on APP_DOMAIN
+  # get SSL with letsencrypt ACME client
+  # cron job to renew cert 3am
+  - path: /opt/scripts/02_get_cert.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      echo "Waiting for DNS {{ APP_DOMAIN }} to resolve..."
+      until getent hosts {{ APP_DOMAIN }} >/dev/null 2>&1; do
+        sleep 15
+      done
+      echo "DNS resolved."
+
+      certbot certonly --standalone \
+        --non-interactive --agree-tos \
+        --email {{ ADMIN_EMAIL }} \
+        -d {{ APP_DOMAIN }}
+
+      echo '0 3 * * * root certbot renew --quiet --deploy-hook "docker compose -f /opt/wtx_viewer/docker-compose.yml exec -T viewer_app nginx -s reload"' \
+        > /etc/cron.d/certbot-renew
+
+  # generate vitessce configs
+  - path: /opt/scripts/03_generate_config.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      cd /opt/wtx_viewer
+      docker build -t vitessce-config vitessce_config/
+      docker run --rm \
+        -v /opt/wtx_viewer/vitessce_config:/output \
+        -e SPATIALDATA_URI=https://{{ APP_DOMAIN }}/zarr \
+        vitessce-config
+
+  # launch app stack
+  - path: /opt/scripts/04_launch_stack.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      cd /opt/wtx_viewer
+      docker compose up --build -d
 
 packages:
   - docker.io
@@ -11,50 +70,12 @@ packages:
   - certbot
 
 runcmd:
-  # start docker services
   - systemctl enable docker
   - systemctl start docker
-  # allow ubuntu user to run docker
   - usermod -aG docker ubuntu
-
-  # uv + repo
   - curl -LsSf https://astral.sh/uv/install.sh | env HOME=/root sh
   - git clone https://github.com/rtubelleza/wtx_viewer_cloud /opt/wtx_viewer
-
-  # generate app credentials and launch app — all in one shell so env vars and CWD persist
-  - |
-    export INSTANCE_NAME=wtx-viewer
-    export OS_AUTH_URL={{ OS_AUTH_URL }}
-    export OS_USERNAME={{ OS_USERNAME }}
-    export OS_PASSWORD={{ OS_PASSWORD }}
-    export OS_PROJECT_ID={{ OS_PROJECT_ID }}
-    export OS_USER_DOMAIN_NAME={{ OS_USER_DOMAIN_NAME }}
-    export OS_PROJECT_DOMAIN_ID={{ OS_PROJECT_DOMAIN_ID }}
-    export OS_PROJECT_NAME={{ OS_PROJECT_NAME }}
-    cd /opt/wtx_viewer/ardcnectar
-    /root/.local/bin/uv run generate_app_cred.py > /opt/wtx_viewer/app_credentials.env
-
-    echo "Waiting for DNS {{ APP_DOMAIN }} to resolve..."
-    until getent hosts {{ APP_DOMAIN }} >/dev/null 2>&1; do
-      sleep 15
-    done
-    echo "DNS resolved."
-
-    certbot certonly --standalone \
-      --non-interactive --agree-tos \
-      --email {{ ADMIN_EMAIL }} \
-      -d {{ APP_DOMAIN }}
-
-    echo '0 3 * * * root certbot renew --quiet --deploy-hook "docker compose -f /opt/wtx_viewer/docker-compose.yml exec -T viewer_app nginx -s reload"' \
-      > /etc/cron.d/certbot-renew
-
-    # generate vitessce config.json before building the stack
-    cd /opt/wtx_viewer
-    docker build -t vitessce-config vitessce_config/
-    docker run --rm \
-      -v /opt/wtx_viewer/vitessce_config:/output \
-      -e SPATIALDATA_URI=https://{{ APP_DOMAIN }}/zarr \
-      vitessce-config
-
-    # launch stack (viewer_app build picks up the generated config.json)
-    docker compose up --build -d
+  - /opt/scripts/01_generate_creds.sh
+  - /opt/scripts/02_get_cert.sh
+  - /opt/scripts/03_generate_config.sh
+  - /opt/scripts/04_launch_stack.sh
