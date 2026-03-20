@@ -94,16 +94,33 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # show changed files for debugging
+            echo "--- Files changed in this update ---"
+            git diff ${OLD_HEAD} HEAD --name-only
+
             # regenerate config.json only if export_config.py changed in this update
             # reuses the vitessce-config image built during cloud-init — no rebuild needed
             if git diff ${OLD_HEAD} HEAD --name-only | grep -q "vitessce_config/src/export_config.py"; then
               echo "export_config.py changed — regenerating config.json"
+
+              # verify image exists — it may have been pruned since cloud-init
+              if ! docker image inspect vitessce-config > /dev/null 2>&1; then
+                echo "vitessce-config image not found — rebuilding"
+                docker build -t vitessce-config vitessce_config/
+              fi
+
               SPATIALDATA_URI=$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
                 | grep -oP 'https?://[^\s\\]+')
+              echo "SPATIALDATA_URI=${SPATIALDATA_URI}"
+
               docker run --rm \
                 -v /opt/wtx_viewer/vitessce_config:/output \
                 -e SPATIALDATA_URI=${SPATIALDATA_URI} \
                 vitessce-config
+
+              echo "config.json updated: $(stat -c '%y' /opt/wtx_viewer/vitessce_config/config.json)"
+            else
+              echo "export_config.py unchanged — skipping config.json regeneration"
             fi
 
             docker compose up --build -d --wait
