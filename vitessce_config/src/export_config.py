@@ -110,7 +110,7 @@ def build_config() -> VitessceConfig:
         coordinate_system=CS,
         coordination_values={
             "fileUid": "he",
-            "obsType": "PathologyAnnotation",
+            "obsType": "Pathology Annotation",
         },
     )
     dataset.add_object(he_obj)
@@ -222,7 +222,7 @@ def build_config() -> VitessceConfig:
                 {
                     "fileUid": "he",
                     "segmentationChannel": CL([{
-                        "obsType": "PathologyAnnotation",
+                        "obsType": "Pathology Annotation",
                         "obsColorEncoding":  path_color_encoding_scope,
                         "obsSetColor":       path_color_scope,
                         "obsSetSelection":   path_selection_scope,
@@ -244,7 +244,7 @@ def build_config() -> VitessceConfig:
         ["obsType"],
         [cosmx_obj.obs_type_label],
     )
-    vc.link_views([path_obs_sets], ["obsType"], ["PathologyAnnotation"])
+    vc.link_views([path_obs_sets], ["obsType"], ["Pathology Annotation"])
     vc.link_views_by_dict([feature_list, cell_obs_sets], {
         "obsColorEncoding": obs_color_encoding_scope,
     }, meta=False)

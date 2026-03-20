@@ -85,10 +85,27 @@ jobs:
           ssh ubuntu@${{ secrets.VM_IP }} << 'EOF'
             set -e
             cd /opt/wtx_viewer
+
+            # capture old HEAD before update — used to detect changed files
+            OLD_HEAD=$(git rev-parse HEAD)
+
             # reset --hard ensures the VM always matches remote exactly
             # avoids merge conflicts from runtime-generated files (e.g. __pycache__)
             git fetch origin main
             git reset --hard origin/main
+
+            # regenerate config.json only if export_config.py changed in this update
+            # reuses the vitessce-config image built during cloud-init — no rebuild needed
+            if git diff ${OLD_HEAD} HEAD --name-only | grep -q "vitessce_config/src/export_config.py"; then
+              echo "export_config.py changed — regenerating config.json"
+              SPATIALDATA_URI=$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
+                | grep -oP 'https?://[^\s\\]+')
+              docker run --rm \
+                -v /opt/wtx_viewer/vitessce_config:/output \
+                -e SPATIALDATA_URI=${SPATIALDATA_URI} \
+                vitessce-config
+            fi
+
             docker compose up --build -d --wait
           EOF
 
