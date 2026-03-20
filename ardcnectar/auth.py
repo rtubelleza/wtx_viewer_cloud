@@ -75,14 +75,11 @@ def get_swift_connection(how="user"):
     session = get_keystone_session(how)
     return Connection(session=session)
 
-def get_novaclient():
-    user_session = get_keystone_session("user") # must be user
-    return nvc.Client(NOVA_VERSION, session=user_session)
+def get_novaclient(how="app"):
+    return nvc.Client(NOVA_VERSION, session=get_keystone_session(how))
 
-def get_designateclient():
-    user_session = get_keystone_session("user") # must be user
-    return dnc.Client(session=user_session)
+def get_designateclient(how="app"):
+    return dnc.Client(session=get_keystone_session(how))
 
-def get_openstackconnection():
-    user_session = get_keystone_session("user") # must be user
-    return openstack.connection.Connection(session=user_session)
+def get_openstackconnection(how="app"):
+    return openstack.connection.Connection(session=get_keystone_session(how))

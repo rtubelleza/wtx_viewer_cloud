@@ -139,8 +139,7 @@ def expose_app(server_ip):
     )
 
 def main():
-    # check necessary user env vars exist as user
-    auth.validate_openstack_user_cred()
+    auth.validate_openstack_app_cred()
 
     # create server container instance, build and launch viewer_app
     server = deploy_server()
