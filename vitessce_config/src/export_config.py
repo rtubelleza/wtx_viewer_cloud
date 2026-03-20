@@ -59,7 +59,7 @@ CELL_TYPE_SPECS = {
         "Pericyte": "#ADD8E6",
         "Smooth muscle cell": "#D8BFD8"
     },
-    "Tumor": "#FF4500",
+    "Tumor": "#FFD000",
 }
 
 NICHE_SPECS = {
