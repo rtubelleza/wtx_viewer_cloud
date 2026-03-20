@@ -96,25 +96,21 @@ jobs:
             echo "--- Files changed in this update ---"
             git diff ${OLD_HEAD} HEAD --name-only
 
-            # regenerate config.json only if export_config.py changed in this update
-            # reuses the vitessce-config image built during cloud-init — no rebuild needed
-            if git diff ${OLD_HEAD} HEAD --name-only | grep -q "vitessce_config/src/export_config.py"; then
-              echo "export_config.py changed — rebuilding vitessce-config image and regenerating config.json"
-              docker build -t vitessce-config vitessce_config/
+            # rebuild vitessce-config image and regenerate config.json on every deploy
+            # pip install layers are Docker-cached so only COPY src re-runs when source changes
+            echo "Building vitessce-config image..."
+            docker build -t vitessce-config vitessce_config/
 
-              SPATIALDATA_URI=$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
-                | grep -oP 'https?://[^\s\\]+')
-              echo "SPATIALDATA_URI=${SPATIALDATA_URI}"
+            SPATIALDATA_URI=$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
+              | grep -oP 'https?://[^\s\\]+')
+            echo "SPATIALDATA_URI=${SPATIALDATA_URI}"
 
-              docker run --rm \
-                -v /opt/wtx_viewer/vitessce_config:/output \
-                -e SPATIALDATA_URI=${SPATIALDATA_URI} \
-                vitessce-config
+            docker run --rm \
+              -v /opt/wtx_viewer/vitessce_config:/output \
+              -e SPATIALDATA_URI=${SPATIALDATA_URI} \
+              vitessce-config
 
-              echo "config.json updated: $(stat -c '%y' /opt/wtx_viewer/vitessce_config/config.json)"
-            else
-              echo "export_config.py unchanged — skipping config.json regeneration"
-            fi
+            echo "config.json updated: $(stat -c '%y' /opt/wtx_viewer/vitessce_config/config.json)"
 
             docker compose up --build -d --wait
           EOF
