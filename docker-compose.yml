@@ -9,6 +9,10 @@ services:
     build:
       context: .
       dockerfile: server_config/Dockerfile
+      args:
+        GIT_BRANCH: ${GIT_BRANCH:-unknown}
+        GIT_HASH: ${GIT_HASH:-unknown}
+        GIT_DATE: ${GIT_DATE:-unknown}
     ports:
       - "80:80"
       - "443:443"
