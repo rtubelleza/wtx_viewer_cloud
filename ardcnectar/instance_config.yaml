@@ -7,6 +7,7 @@ instance:
   network: QRIScloud
   security_groups: [default, ssh, viewer_ingress]
   key_name: "fimac2" # NOTE: delete once SSH no longer needed for debugging.
+  github_actions_key: "github-actions-update" # name of the action runner for updating repo instance + service
 
 app:
   target_zone: "nsclc-spatial-atlas.cloud.edu.au."

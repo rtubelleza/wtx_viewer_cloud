@@ -12,8 +12,7 @@ def load_config() -> dict:
         return yaml.safe_load(f)
 
 
-def delete_server(instance_name: str):
-    nova = auth.get_novaclient()
+def delete_server(nova, instance_name: str):
     try:
         server = nova.servers.find(name=instance_name)
         nova.servers.delete(server)
@@ -22,8 +21,7 @@ def delete_server(instance_name: str):
         print(f"Compute instance '{instance_name}' not found, skipping.")
 
 
-def delete_dns_record(target_zone: str, app_domain: str):
-    dns_client = auth.get_designateclient()
+def delete_dns_record(dns_client, target_zone: str, app_domain: str):
     zones = dns_client.zones.list()
 
     zone = next((z for z in zones if z["name"] == target_zone), None)
@@ -45,8 +43,7 @@ def delete_dns_record(target_zone: str, app_domain: str):
     print(f"Deleted DNS A record '{app_domain}' from zone '{target_zone}'.")
 
 
-def delete_app_credentials(instance_name: str):
-    keystone = auth.get_keystone_client("user")
+def delete_app_credentials(keystone, instance_name: str):
     try:
         app_cred = keystone.application_credentials.find(name=instance_name)
         keystone.application_credentials.delete(app_cred)
@@ -54,20 +51,24 @@ def delete_app_credentials(instance_name: str):
     except NotFound:
         print(f"Application credentials '{instance_name}' not found, skipping.")
 
+def delete_github_actions_keypair():
+    pass
 
 def main():
-    auth.validate_openstack_user_cred()
+    dns_client = auth.get_designateclient()
+    nova = auth.get_novaclient()
+    user_keystone = auth.get_keystone_client("user")
 
     cfg = load_config()
     instance_name = cfg["instance"]["name"]
-    target_zone   = cfg["app"]["target_zone"]
-    app_domain    = cfg["app"]["app_domain"]
+    target_zone = cfg["app"]["target_zone"]
+    app_domain = cfg["app"]["app_domain"]
 
     print(f"Tearing down '{instance_name}'...")
 
-    delete_server(instance_name)
-    delete_dns_record(target_zone, app_domain)
-    delete_app_credentials(instance_name)
+    delete_server(nova, instance_name)
+    delete_dns_record(dns_client, target_zone, app_domain)
+    delete_app_credentials(user_keystone, instance_name)
     print("Teardown complete.")
 
 if __name__ == "__main__":

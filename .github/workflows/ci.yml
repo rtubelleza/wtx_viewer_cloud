@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-python:
+    name: Lint Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run ruff
+        working-directory: ardcnectar
+        run: uvx ruff check --exclude .venv .
+
+  validate-compose:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # docker compose config parses and validates docker-compose.yml
+      # --quiet suppresses the rendered output, only shows errors
+      - name: Check docker-compose.yml
+        run: docker compose config --quiet
+
+  validate-nginx:
+    name: Validate nginx config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # nginx -t checks config syntax and structure
+      - name: Generate dummy SSL certs
+        run: |
+          mkdir -p /tmp/letsencrypt/live/viewer.nsclc-spatial-atlas.cloud.edu.au
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout /tmp/letsencrypt/live/viewer.nsclc-spatial-atlas.cloud.edu.au/privkey.pem \
+            -out  /tmp/letsencrypt/live/viewer.nsclc-spatial-atlas.cloud.edu.au/fullchain.pem \
+            -subj "/CN=test"
+
+      - name: Test nginx config (viewer_app)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/server_config/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
+            -v /tmp/letsencrypt:/etc/letsencrypt:ro \
+            nginx:alpine nginx -t
+
+  build-images:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # build both images to catch Dockerfile errors before they reach the VM
+      - name: Build viewer_app image
+        run: docker build -f server_config/Dockerfile -t viewer_app:ci .
+
+      - name: Build data_store image
+        run: docker build -f data_config/Dockerfile -t data_store:ci .

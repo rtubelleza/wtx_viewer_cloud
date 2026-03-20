@@ -67,12 +67,16 @@ packages:
   - curl
   - certbot
 
+ssh_authorized_keys:
+  - {{ GH_ACTIONS_PUBLIC_KEY }}
+
 runcmd:
   - systemctl enable docker
   - systemctl start docker
   - usermod -aG docker ubuntu
   - curl -LsSf https://astral.sh/uv/install.sh | env HOME=/root sh
   - git clone https://github.com/rtubelleza/wtx_viewer_cloud /opt/wtx_viewer
+  - chown -R ubuntu:ubuntu /opt/wtx_viewer
   - /opt/scripts/01_generate_creds.sh
   - /opt/scripts/02_get_cert.sh
   - /opt/scripts/03_generate_config.sh

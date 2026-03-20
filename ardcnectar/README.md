@@ -8,21 +8,33 @@ Contains deployment environment and scripts for deploying the wtx_viewer in on N
 # Requirements
 - Defined in pyproject.toml
 
-# Environmental Variables
-The following environmental variables need to be set:
-- `OS_AUTH_URL`
-- `OS_USERNAME`
-- `OS_PASSWORD`
-- `OS_PROJECT_ID`
-- `OS_USER_DOMAIN_NAME`
-- `OS_PROJECT_DOMAIN_ID`
-- `OS_PROJECT_NAME`
+# Environment Variables
+The following environmental variables need to be set for authentication:
+| Variable | Description |
+|---|---|
+| `OS_AUTH_URL` | OpenStack Authentication URL. For Nectar Project allocations this is usually https://identity.rc.nectar.org.au/v3/|
+| `OS_USERNAME` | OpenStack username/email. Usually member/tenantmember role. |
+| `OS_PASSWORD` | OpenStack password. |
+| `OS_PROJECT_ID` | OpenStack project ID for the allocation. |
+| `OS_USER_DOMAIN_NAME` | OpenStack user domain name. Usually "Default". |
+| `OS_PROJECT_DOMAIN_ID` | OpenStack project domain id. Usually "default". |
+| `OS_PROJECT_NAME` | OpenStack project name. Usually the same name as the Nectar project allocation. |
 
-It is recommended to set these from a `.env` file or by sourcing an OpenStack RC file (i.e. see https://tutorials.rc.nectar.org.au/openstack-cli/04-credentials).
+It is recommended to set these automatiaclly from a `.env` file or by sourcing an OpenStack RC file (i.e. see https://tutorials.rc.nectar.org.au/openstack-cli/04-credentials).
 
 # Usage
-With user credentials and the above environmental variables run in this directory:
 
+Setup UV project
+```{python}
+uv venv
+```
+
+a) Run deployment script:
 ```{python}
 uv run deploy.py
+```
+
+b) The instances, application credentials, key pairs and DNS record sets created by `deploy.py` can be 'reverted' with an accompanying teardown script:
+```{python}
+uv run teardown.py
 ```

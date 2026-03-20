@@ -1,0 +1,104 @@
+name: CD
+
+on:
+  # auto-triggers after CI passes on main
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:  # enable manual trigger
+
+jobs:
+  # preflight check verifies deploy.py has been run before attempting deployment
+  # outputs vm_ready=true/false which gates the deploy job
+  check-vm:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      vm_ready: ${{ steps.check.outputs.vm_ready }}
+    steps:
+      - name: Check VM secrets and reachability
+        id: check
+        run: |
+          # secrets render as empty string when not set — check both are configured
+          if [ -z "${{ secrets.VM_IP }}" ] || [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "VM secrets not set — run deploy.py first to provision a VM"
+            echo "vm_ready=false" >> $GITHUB_OUTPUT
+          # check port 22 is open — VM exists and is running
+          elif nc -z -w5 ${{ secrets.VM_IP }} 22 2>/dev/null; then
+            echo "VM is reachable — proceeding with deployment"
+            echo "vm_ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "VM_IP is set but port 22 is unreachable — VM may be down or still booting"
+            echo "vm_ready=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: check-vm
+    # skip gracefully if VM is not ready — shows as 'skipped' not 'failed' in Actions UI
+    if: needs.check-vm.outputs.vm_ready == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # poll port 22 until SSH is accepting connections, takes awhile after instance is built
+      # timeout after 10 minutes (60 attempts x 10s)
+      - name: Wait for SSH to be ready
+        run: |
+          echo "Waiting for SSH on ${{ secrets.VM_IP }}..."
+          for i in $(seq 1 60); do
+            nc -z -w5 ${{ secrets.VM_IP }} 22 && echo "SSH ready." && exit 0
+            echo "Attempt $i/60 — retrying in 10s..."
+            sleep 10
+          done
+          echo "SSH did not become ready in time." && exit 1
+
+      - name: Add VM to known hosts
+        run: ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
+
+      # wait for cloud-init to finish running 02_get_cert.sh
+      # timeout after 20 minutes (80 attempts x 15s)
+      - name: Wait for SSL certificate
+        run: |
+          echo "Waiting for certbot to complete..."
+          for i in $(seq 1 80); do
+            ssh ubuntu@${{ secrets.VM_IP }} \
+              "sudo test -f /etc/letsencrypt/live/viewer.nsclc-spatial-atlas.cloud.edu.au/fullchain.pem" \
+              && echo "Certificate ready." && exit 0
+            echo "Attempt $i/80 — retrying in 15s..."
+            sleep 15
+          done
+          echo "Certificate did not appear in time." && exit 1
+
+      - name: Pull latest code and restart containers
+        run: |
+          ssh ubuntu@${{ secrets.VM_IP }} << 'EOF'
+            set -e
+            cd /opt/wtx_viewer
+            git pull origin main
+            docker compose up --build -d --wait
+          EOF
+
+      # print container logs if deploy step failed
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          ssh ubuntu@${{ secrets.VM_IP }} \
+            "docker compose -f /opt/wtx_viewer/docker-compose.yml logs --tail=50"
+
+      # confirm the app is responding over HTTPS
+      - name: Health check
+        run: |
+          sleep 5
+          curl --fail --silent --max-time 30 \
+            https://viewer.nsclc-spatial-atlas.cloud.edu.au \
+            -o /dev/null \
+            && echo "Health check passed" \
+            || (echo "Health check failed" && exit 1)
