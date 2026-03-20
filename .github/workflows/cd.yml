@@ -1,5 +1,8 @@
 name: CD
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   # auto-triggers after CI passes on main
   workflow_run:
