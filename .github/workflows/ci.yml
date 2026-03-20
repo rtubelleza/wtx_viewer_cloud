@@ -26,8 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # app_credentials.env is generated on the VM by deploy.py
+      # create a dummy empty file at the expected path so docker compose config can resolve it
+      - name: Create dummy app credentials file
+        run: mkdir -p /opt/wtx_viewer && touch /opt/wtx_viewer/app_credentials.env
+
       # docker compose config parses and validates docker-compose.yml
-      # --quiet suppresses the rendered output, only shows errors
       - name: Check docker-compose.yml
         run: docker compose config --quiet
 
