@@ -80,21 +80,26 @@ jobs:
           done
           echo "Certificate did not appear in time." && exit 1
 
+      # capture current HEAD before any changes — used by rollback step if deploy fails
+      - name: Snapshot current HEAD
+        id: snapshot
+        run: |
+          OLD_HEAD=$(ssh ubuntu@${{ secrets.VM_IP }} "cd /opt/wtx_viewer && git rev-parse HEAD")
+          echo "old_head=${OLD_HEAD}" >> $GITHUB_OUTPUT
+          echo "Snapshot: ${OLD_HEAD}"
+
       - name: Pull latest code and restart containers
         run: |
           ssh ubuntu@${{ secrets.VM_IP }} << 'EOF'
             set -e
             cd /opt/wtx_viewer
 
-            # capture old HEAD before update 
-            OLD_HEAD=$(git rev-parse HEAD)
-
             git fetch origin main
             git reset --hard origin/main
 
             # show changed files for debugging
             echo "--- Files changed in this update ---"
-            git diff ${OLD_HEAD} HEAD --name-only
+            git diff HEAD~1 HEAD --name-only
 
             # rebuild vitessce-config image and regenerate config.json on every deploy
             # pip install layers are Docker-cached so only COPY src re-runs when source changes
@@ -118,13 +123,6 @@ jobs:
             docker compose up --build -d --wait
           EOF
 
-      # print container logs if deploy step failed
-      - name: Dump container logs on failure
-        if: failure()
-        run: |
-          ssh ubuntu@${{ secrets.VM_IP }} \
-            "docker compose -f /opt/wtx_viewer/docker-compose.yml logs --tail=50"
-
       # confirm the app is responding over HTTPS
       - name: Health check
         run: |
@@ -134,3 +132,40 @@ jobs:
             -o /dev/null \
             && echo "Health check passed" \
             || (echo "Health check failed" && exit 1)
+
+      # rollback to previous commit if deploy or health check failed
+      - name: Rollback to previous commit
+        if: failure()
+        run: |
+          OLD_HEAD=${{ steps.snapshot.outputs.old_head }}
+          echo "!!! Rolling back to ${OLD_HEAD} !!!"
+          ssh ubuntu@${{ secrets.VM_IP }} << EOF
+            set -e
+            cd /opt/wtx_viewer
+
+            git reset --hard ${OLD_HEAD}
+            echo "Reverted to: \$(git log -1 --oneline)"
+
+            docker build -t vitessce-config vitessce_config/
+
+            SPATIALDATA_URI=\$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
+              | grep -oP 'https?://[^\s\\\\]+')
+            docker run --rm \
+              -v /opt/wtx_viewer/vitessce_config:/output \
+              -e SPATIALDATA_URI=\${SPATIALDATA_URI} \
+              vitessce-config
+
+            export GIT_BRANCH=\$(git rev-parse --abbrev-ref HEAD)
+            export GIT_HASH=\$(git rev-parse --short HEAD)
+            export GIT_DATE=\$(git log -1 --format=%cd --date=short)
+            docker compose up --build -d --wait
+
+            echo "Rollback complete — previous version is live."
+          EOF
+
+      # print container logs after rollback for debugging
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          ssh ubuntu@${{ secrets.VM_IP }} \
+            "docker compose -f /opt/wtx_viewer/docker-compose.yml logs --tail=50"
