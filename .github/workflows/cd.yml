@@ -85,7 +85,10 @@ jobs:
           ssh ubuntu@${{ secrets.VM_IP }} << 'EOF'
             set -e
             cd /opt/wtx_viewer
-            git pull origin main
+            # reset --hard ensures the VM always matches remote exactly
+            # avoids merge conflicts from runtime-generated files (e.g. __pycache__)
+            git fetch origin main
+            git reset --hard origin/main
             docker compose up --build -d --wait
           EOF
 
