@@ -15,3 +15,8 @@ Repository for deploying and hosting an interactive viewer application server fo
 See `/ardcnectar/README.md`
 
 ## CI/CD
+Requires initial deployment to launch instance.
+CD ensures website reflects latest `/server_config/index.html` layouts and `config.json` defined by `vitessce_config/src/export_config.py`.
+
+# Citation
+tba

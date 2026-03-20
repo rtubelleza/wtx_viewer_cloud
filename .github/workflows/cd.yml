@@ -99,13 +99,8 @@ jobs:
             # regenerate config.json only if export_config.py changed in this update
             # reuses the vitessce-config image built during cloud-init — no rebuild needed
             if git diff ${OLD_HEAD} HEAD --name-only | grep -q "vitessce_config/src/export_config.py"; then
-              echo "export_config.py changed — regenerating config.json"
-
-              # verify image exists 
-              if ! docker image inspect vitessce-config > /dev/null 2>&1; then
-                echo "vitessce-config image not found — rebuilding"
-                docker build -t vitessce-config vitessce_config/
-              fi
+              echo "export_config.py changed — rebuilding vitessce-config image and regenerating config.json"
+              docker build -t vitessce-config vitessce_config/
 
               SPATIALDATA_URI=$(grep 'SPATIALDATA_URI=' /opt/scripts/03_generate_config.sh \
                 | grep -oP 'https?://[^\s\\]+')
