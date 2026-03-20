@@ -14,5 +14,6 @@ services:
       - "443:443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /opt/wtx_viewer/vitessce_config/config.json:/usr/share/nginx/html/config.json:ro
     depends_on:
       - data_store
