@@ -9,7 +9,6 @@ import os
 import utils
 import json
 
-# env vars; defined as docker vars
 SPATIALDATA_URI = os.environ.get("SPATIALDATA_URI", "")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "/output")
 CS = "um_aligned_ltb12_grid" 

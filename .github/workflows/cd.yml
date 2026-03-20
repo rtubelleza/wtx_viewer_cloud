@@ -86,11 +86,9 @@ jobs:
             set -e
             cd /opt/wtx_viewer
 
-            # capture old HEAD before update — used to detect changed files
+            # capture old HEAD before update 
             OLD_HEAD=$(git rev-parse HEAD)
 
-            # reset --hard ensures the VM always matches remote exactly
-            # avoids merge conflicts from runtime-generated files (e.g. __pycache__)
             git fetch origin main
             git reset --hard origin/main
 
@@ -103,7 +101,7 @@ jobs:
             if git diff ${OLD_HEAD} HEAD --name-only | grep -q "vitessce_config/src/export_config.py"; then
               echo "export_config.py changed — regenerating config.json"
 
-              # verify image exists — it may have been pruned since cloud-init
+              # verify image exists 
               if ! docker image inspect vitessce-config > /dev/null 2>&1; then
                 echo "vitessce-config image not found — rebuilding"
                 docker build -t vitessce-config vitessce_config/
