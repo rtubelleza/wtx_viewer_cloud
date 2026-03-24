@@ -51,9 +51,6 @@ def delete_app_credentials(keystone, instance_name: str):
     except NotFound:
         print(f"Application credentials '{instance_name}' not found, skipping.")
 
-def delete_github_actions_keypair():
-    pass
-
 def main():
     dns_client = auth.get_designateclient()
     nova = auth.get_novaclient()
