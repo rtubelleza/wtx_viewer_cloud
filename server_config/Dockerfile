@@ -1,4 +1,4 @@
-FROM nginx:alpine
+FROM nginx:1.30.1-alpine
 
 RUN sed -i 's/^worker_processes.*/worker_processes auto;/' /etc/nginx/nginx.conf && \
     sed -i 's/worker_connections.*/worker_connections 4096;/' /etc/nginx/nginx.conf
