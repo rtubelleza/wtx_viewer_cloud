@@ -32,13 +32,20 @@ write_files:
       done
       echo "DNS resolved."
 
+      # standalone binds :80 for the ACME challenge. This works on first issue
+      # (stack not launched yet) but the viewer_app container holds :80 afterwards,
+      # so renewals MUST stop it first. The pre/post hooks are persisted into the
+      # renewal conf and are reused by both `certbot renew` and the systemd timer.
+      COMPOSE="docker compose -f /opt/wtx_viewer/docker-compose.yml"
       certbot certonly --standalone \
         --non-interactive --agree-tos \
         --email {{ ADMIN_EMAIL }} \
-        -d {{ APP_DOMAIN }}
+        -d {{ APP_DOMAIN }} \
+        --pre-hook "$COMPOSE stop viewer_app" \
+        --post-hook "$COMPOSE start viewer_app"
 
-      echo '0 3 * * * root certbot renew --quiet --deploy-hook "docker compose -f /opt/wtx_viewer/docker-compose.yml exec -T viewer_app nginx -s reload"' \
-        > /etc/cron.d/certbot-renew
+      # renew twice daily; hooks above free :80 during renewal and restart after
+      echo '0 3,15 * * * root certbot renew --quiet' > /etc/cron.d/certbot-renew
 
   # generate vitessce configs
   - path: /opt/scripts/03_generate_config.sh
