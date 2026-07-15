@@ -1,0 +1,21 @@
+# Provider plugins + lock metadata cache (re-created by `tofu init`)
+.terraform/
+
+# State and any local state backups — contain secrets. Belongs in the encrypted
+# S3 backend, never in git.
+*.tfstate
+*.tfstate.*
+
+# Saved plan files — may contain secrets.
+*.tfplan
+
+# Variable files — may hold environment-specific or sensitive values.
+*.tfvars
+
+# Retrieved deploy key (see outputs.tf)
+deploy_key
+deploy_key.pub
+
+# Crash logs
+crash.log
+crash.*.log

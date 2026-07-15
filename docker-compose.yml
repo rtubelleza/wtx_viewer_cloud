@@ -13,6 +13,12 @@ services:
         GIT_BRANCH: ${GIT_BRANCH:-unknown}
         GIT_HASH: ${GIT_HASH:-unknown}
         GIT_DATE: ${GIT_DATE:-unknown}
+    environment:
+      # Defaults to prod domain so existing prod deploys are unchanged; staging
+      # sets APP_DOMAIN via /opt/wtx_viewer/.env (written by cloud-init).
+      APP_DOMAIN: ${APP_DOMAIN:-viewer.nsclc-spatial-atlas.cloud.edu.au}
+      # Only substitute APP_DOMAIN in the nginx template; leave $host/$uri etc. alone.
+      NGINX_ENVSUBST_FILTER: APP_DOMAIN
     ports:
       - "80:80"
       - "443:443"

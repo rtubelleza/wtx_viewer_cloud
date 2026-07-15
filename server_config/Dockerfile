@@ -4,7 +4,9 @@ RUN sed -i 's/^worker_processes.*/worker_processes auto;/' /etc/nginx/nginx.conf
     sed -i 's/worker_connections.*/worker_connections 4096;/' /etc/nginx/nginx.conf
 
 COPY server_config/index.html /usr/share/nginx/html/index.html
-COPY server_config/nginx.conf /etc/nginx/conf.d/default.conf
+# Placed under templates/ so nginx's entrypoint runs envsubst on ${APP_DOMAIN}
+# at container start, rendering it to /etc/nginx/conf.d/default.conf.
+COPY server_config/nginx.conf /etc/nginx/templates/default.conf.template
 
 ARG GIT_BRANCH=unknown
 ARG GIT_HASH=unknown
