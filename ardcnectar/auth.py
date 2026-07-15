@@ -1,3 +1,6 @@
+# DEPRECATED (2026-07-15): supports only the legacy Python provisioning flow
+# (deploy.py / teardown.py / generate_app_cred.py), superseded by ardcnectar/tofu/.
+# Deleted at prod cutover. See ardcnectar/README.md.
 import os
 from keystoneauth1 import session
 from keystoneauth1.identity import v3

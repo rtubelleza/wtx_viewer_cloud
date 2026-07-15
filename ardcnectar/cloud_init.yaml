@@ -1,4 +1,6 @@
 #cloud-config
+# DEPRECATED (2026-07-15): legacy cloud-init for the deploy.py flow; superseded by
+# ardcnectar/tofu/cloud_init.yaml.tftpl. Deleted at prod cutover.
 
 write_files:
   # generate app credentials for current instance
