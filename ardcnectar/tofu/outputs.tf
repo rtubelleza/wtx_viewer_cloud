@@ -20,3 +20,17 @@ output "ssh_private_key" {
   value = tls_private_key.deploy.private_key_openssh
   sensitive = true
 }
+
+# For credential rotation
+# `tofu output -raw app_credential_{id,secret}`
+output "app_credential_id" {
+  description = "Application credential ID."
+  value = openstack_identity_application_credential_v3.app.id
+  sensitive = true
+}
+
+output "app_credential_secret" {
+  description = "Application credential secret."
+  value = openstack_identity_application_credential_v3.app.secret
+  sensitive = true
+}
