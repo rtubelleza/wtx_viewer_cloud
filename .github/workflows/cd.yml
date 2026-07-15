@@ -12,7 +12,8 @@ on:
   workflow_dispatch:  # enable manual trigger
 
 jobs:
-  # preflight check verifies deploy.py has been run before attempting deployment
+  # preflight check verifies the VM has been provisioned (tofu apply in
+  # ardcnectar/tofu) before attempting deployment
   # outputs vm_ready=true/false which gates the deploy job
   check-vm:
     runs-on: ubuntu-latest
@@ -25,7 +26,7 @@ jobs:
         run: |
           # secrets render as empty string when not set — check both are configured
           if [ -z "${{ secrets.VM_IP }}" ] || [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "VM secrets not set — run deploy.py first to provision a VM"
+            echo "VM secrets not set — run 'tofu apply' (ardcnectar/tofu) first to provision the VM"
             echo "vm_ready=false" >> $GITHUB_OUTPUT
           # check port 22 is open — VM exists and is running
           elif nc -z -w5 ${{ secrets.VM_IP }} 22 2>/dev/null; then

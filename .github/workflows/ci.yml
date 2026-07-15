@@ -21,7 +21,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Run ruff
-        working-directory: ardcnectar
+        working-directory: vitessce_config
         run: uvx ruff check --exclude .venv .
 
   validate-compose:
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # app_credentials.env is generated on the VM by deploy.py
+      # app_credentials.env is generated on the VM by cloud-init (provisioned via ardcnectar/tofu)
       # create a dummy empty file at the expected path so docker compose config can resolve it
       - name: Create dummy app credentials file
         run: mkdir -p /opt/wtx_viewer && touch /opt/wtx_viewer/app_credentials.env

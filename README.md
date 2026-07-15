@@ -2,7 +2,7 @@
 Repository for deploying and hosting an interactive viewer application server for a WTX dataset on a ARDC Nectar research cloud project allocation.
 
 # Main Components
-1) `/ardcnectar`: Contains scripts for automated deployment onto an existing Nectar allocation.
+1) `/ardcnectar`: Contains infrastructure-as-code for the ARDC Nectar Deployment the server is hosted on. 
    
 2) Docker stack: Builds and runs the application running on a compute instance in the project allocation.
 - `docker-compose.yml`: Defines docker stack

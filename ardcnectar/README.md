@@ -1,14 +1,17 @@
 # Overview
-Contains deployment environment and scripts for deploying the wtx_viewer in on Nectar using OpenStack.
+Contains Infrastructure-as-Code for deploying the wtx_viewer in on Nectar using OpenTofu.
 - Creates compute container instance
 - Generates application credentials for that instance
 - Registers container instance IP to project allocation zone as a record set
 - Runs docker service in compute instance to host viewer application (see `data_config`, `server_config`, `vitessce_config`).
 
 # Requirements
-- Defined in pyproject.toml
+- OpenTofu
+- OpenStack CLI
 
-# Environment Variables
+# Usage
+## Environmental Variables
+### 1. Source `OpenStack` env vars.
 The following environmental variables need to be set for authentication:
 | Variable | Description |
 |---|---|
@@ -22,19 +25,37 @@ The following environmental variables need to be set for authentication:
 
 It is recommended to set these automatiaclly from a `.env` file or by sourcing an OpenStack RC file (i.e. see https://tutorials.rc.nectar.org.au/openstack-cli/04-credentials).
 
-# Usage
+### 2. Source S3 backend env vars.
+The state of the deployment (.tfstate) is stored in an accompanying Swift Object store and is encrypted.
+To store this, need the following env vars:
+| Variable | Description |
+|---|---|
+| `AWS_ACCESS_KEY` | "access" field |
+| `AWS_SECRET_ACCESS_KEY` | "secret" field |
+| `AWS_REGION` | Non-functional value, but used by Ceph RGW. Default to us-east-1. |
+| `TF_VAR_state_encryption_passphrase` | any 20+ character passphrase |
 
-Setup UV project
-```{python}
-uv venv
+Run `openstack ec2 credentials create`, and use the "access" and "secret" values for the two AWS env vars.
+
+### 3. Source GitHub env vars.
+| Variable | Description |
+|---|---|
+| `GITHUB_TOKEN` | Github token for github secrets|
+
+### 4. Create .tfvars specification in /tofu
+This defines the deployment instances. Can create one called `prod.tfvars` and define the following variables
+```terraform
+instance_name = "my_instance"
+app_domain = "myprefix.project-domain.cloud.edu.au"
+admin_email = "admin@project-domain.cloud.edu.au"
+manage_github_secrets = true
+
+app_https_cidr = 0.0.0.0/0 # allow internet access to the app viewer
 ```
 
-a) Run deployment script:
-```{python}
-uv run deploy.py
-```
-
-b) The instances, application credentials, key pairs and DNS record sets created by `deploy.py` can be 'reverted' with an accompanying teardown script:
-```{python}
-uv run teardown.py
+### 5. Run OpenTofu
+```bash
+tofu init -reconfigure -backend-config="key=prod/terraform.tfstate"
+tofu plan  -var-file=prod.tfvars
+tofu apply -var-file=prod.tfvars
 ```

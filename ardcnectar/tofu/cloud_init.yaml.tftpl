@@ -58,9 +58,14 @@ write_files:
       #!/bin/bash
       set -euo pipefail
       cd /opt/wtx_viewer
-      # docker compose auto-reads .env for ${APP_DOMAIN} interpolation. Persisted
-      # so later manual `docker compose up` on this box uses the right domain too.
+      # docker compose auto-reads .env for APP_DOMAIN interpolation. Persisted so
+      # later manual `docker compose up` on this box uses the right domain too.
       echo "APP_DOMAIN=${app_domain}" > /opt/wtx_viewer/.env
+      # stamp the build with git provenance (matches the CD workflow); without
+      # these the viewer footer shows branch/hash/date = unknown on first boot.
+      export GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+      export GIT_HASH=$(git rev-parse --short HEAD)
+      export GIT_DATE=$(git log -1 --format=%cd --date=short)
       docker compose up --build -d
 
 packages:
