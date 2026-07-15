@@ -7,7 +7,7 @@ for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SE
     echo "ERROR: $var is not set" >&2
     exit 1
   fi
-  echo "$var=${val:0:8}..."
+  echo "$var is set" 
 done
 
 SWIFT_STORAGE_URL="https://object-store.rc.nectar.org.au/v1/AUTH_${OS_PROJECT_ID}"
