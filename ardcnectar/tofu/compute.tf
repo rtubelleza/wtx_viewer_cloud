@@ -57,4 +57,9 @@ resource "openstack_compute_instance_v2" "viewer" {
     admin_email = var.admin_email
     ssh_public_keys = var.extra_ssh_authorized_keys
   })
+
+  # cd keeps this updated. 
+  lifecycle {
+    ignore_changes = [user_data]
+  }
 }
