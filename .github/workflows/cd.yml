@@ -67,6 +67,17 @@ jobs:
       - name: Add VM to known hosts
         run: ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
 
+      # the VM already knows its own domain: cloud-init writes 03_generate_config.sh
+      # (write_files) long before runcmd requests the certificate, so this is readable
+      # here and keeps the workflow free of hardcoded hostnames
+      - name: Discover app domain from the VM
+        id: vm
+        run: |
+          FQDN=$(ssh ubuntu@${{ secrets.VM_IP }} \
+            "grep -oP 'SPATIALDATA_URI=https?://\K[^/]+' /opt/scripts/03_generate_config.sh")
+          echo "fqdn=${FQDN}" >> $GITHUB_OUTPUT
+          echo "App domain: ${FQDN}"
+
       # wait for cloud-init to finish running 02_get_cert.sh
       # timeout after 20 minutes (80 attempts x 15s)
       - name: Wait for SSL certificate
@@ -74,7 +85,7 @@ jobs:
           echo "Waiting for certbot to complete..."
           for i in $(seq 1 80); do
             ssh ubuntu@${{ secrets.VM_IP }} \
-              "sudo test -f /etc/letsencrypt/live/viewer.nsclc-spatial-atlas.cloud.edu.au/fullchain.pem" \
+              "sudo test -f /etc/letsencrypt/live/${{ steps.vm.outputs.fqdn }}/fullchain.pem" \
               && echo "Certificate ready." && exit 0
             echo "Attempt $i/80 — retrying in 15s..."
             sleep 15
@@ -129,7 +140,7 @@ jobs:
         run: |
           sleep 5
           curl --fail --silent --max-time 30 \
-            https://viewer.nsclc-spatial-atlas.cloud.edu.au \
+            https://${{ steps.vm.outputs.fqdn }} \
             -o /dev/null \
             && echo "Health check passed" \
             || (echo "Health check failed" && exit 1)
