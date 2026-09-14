@@ -1,13 +1,17 @@
+import json
+import os
+import warnings
+
 from vitessce import (
-    VitessceConfig,
     CoordinationLevel as CL,
+)
+from vitessce import (
     SpatialDataWrapper,
+    VitessceConfig,
     get_initial_coordination_scope_prefix,
 )
-import warnings
-import os
+
 import utils
-import json
 
 SPATIALDATA_URI = os.environ.get("SPATIALDATA_URI", "")
 CONFIG_PATH = os.environ.get("CONFIG_PATH", "/output")
@@ -283,7 +287,7 @@ def build_config() -> VitessceConfig:
     }, meta=False)
     vc.link_views_by_dict([spatial, layer_controller], {}, meta=True)
     vc.layout(
-        (spatial | ((layer_controller / feature_list | (path_obs_sets / cell_obs_sets)) / (umap_scatter | pca_scatter) ))
+        spatial | ((layer_controller / feature_list | (path_obs_sets / cell_obs_sets)) / (umap_scatter | pca_scatter) )
     )
 
     return vc
