@@ -17,6 +17,9 @@ jobs:
   # outputs vm_ready=true/false which gates the deploy job
   check-vm:
     runs-on: ubuntu-latest
+    # VM_IP and SSH_PRIVATE_KEY are environment-scoped (ardcnectar/tofu/github.tf),
+    # so this job must declare the environment to resolve them.
+    environment: production
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     outputs:
       vm_ready: ${{ steps.check.outputs.vm_ready }}
@@ -42,6 +45,8 @@ jobs:
     # skip gracefully if VM is not ready — shows as 'skipped' not 'failed' in Actions UI
     if: needs.check-vm.outputs.vm_ready == 'true'
     runs-on: ubuntu-latest
+    # scopes the deploy secrets and applies the environment's required reviewer
+    environment: production
 
     steps:
       - name: Checkout repository
