@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # check required openstack env vars
-for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SECRET OS_PROJECT_ID; do
+for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SECRET OS_PROJECT_ID SWIFT_CONTAINER; do
   eval val=\$$var
   if [ -z "$val" ]; then
     echo "ERROR: $var is not set" >&2
@@ -33,7 +33,7 @@ fetch_token() {
 
 # set storage url to config of data_store serv
 write_config() {
-  SWIFT_AUTH_TOKEN="$1" envsubst '${SWIFT_AUTH_TOKEN} ${SWIFT_STORAGE_URL}' \
+  SWIFT_AUTH_TOKEN="$1" envsubst '${SWIFT_AUTH_TOKEN} ${SWIFT_STORAGE_URL} ${SWIFT_CONTAINER}' \
     < /etc/nginx/conf.d/default.conf.template \
     > /etc/nginx/conf.d/default.conf
 }

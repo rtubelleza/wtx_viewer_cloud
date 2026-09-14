@@ -12,6 +12,6 @@ resource "openstack_identity_application_credential_v3" "app" {
   access_rules {
     service = "object-store"
     method = "GET"
-    path = "/v1/AUTH_${data.openstack_identity_auth_scope_v3.current.project_id}/main/**"
+    path = "/v1/AUTH_${data.openstack_identity_auth_scope_v3.current.project_id}/${var.swift_container}/**"
   }
 }

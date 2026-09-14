@@ -56,6 +56,7 @@ resource "openstack_compute_instance_v2" "viewer" {
     app_domain = local.app_fqdn
     admin_email = var.admin_email
     ssh_public_keys = var.extra_ssh_authorized_keys
+    swift_container = var.swift_container
   })
 
   # cd keeps this updated. 

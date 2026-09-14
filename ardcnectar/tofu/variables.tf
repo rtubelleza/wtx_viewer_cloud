@@ -69,6 +69,12 @@ variable "admin_email" {
   type        = string
 }
 
+variable "swift_container" {
+  description = "Swift object-store container holding mosaic.zarr. Prod = \"main\"; a second tier uses its own container."
+  type = string
+  default = "main"
+}
+
 variable "app_cred_auth_url" {
   description = "Keystone URL written into the VM's app_credentials.env for the data_store service."
   type        = string

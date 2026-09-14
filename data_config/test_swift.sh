@@ -23,7 +23,7 @@ fi
 
 # Validate required vars
 MISSING=0
-for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SECRET OS_PROJECT_ID; do
+for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SECRET OS_PROJECT_ID SWIFT_CONTAINER; do
   eval val=\$$var
   if [ -z "$val" ]; then
     echo "FAIL  env var $var is not set" >&2
@@ -56,18 +56,18 @@ echo ""
 echo "--- Test 2: Swift container reachable ---"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
   -H "X-Auth-Token: $TOKEN" \
-  "${SWIFT_STORAGE_URL}/main")
+  "${SWIFT_STORAGE_URL}/${SWIFT_CONTAINER}")
 if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-  echo "OK    Container /main responded HTTP $HTTP_CODE"
+  echo "OK    Container /${SWIFT_CONTAINER} responded HTTP $HTTP_CODE"
 else
-  echo "FAIL  Container /main responded HTTP $HTTP_CODE (expected 200 or 204)" >&2
+  echo "FAIL  Container /${SWIFT_CONTAINER} responded HTTP $HTTP_CODE (expected 200 or 204)" >&2
   exit 1
 fi
 
 echo ""
 echo "--- Test 3: Zarr root reachable ---"
 # Try the zarr .zgroup at the root of the store
-TEST_PATH="${SWIFT_STORAGE_URL}/main/mosaic.zarr/.zgroup"
+TEST_PATH="${SWIFT_STORAGE_URL}/${SWIFT_CONTAINER}/mosaic.zarr/.zgroup"
 HTTP_CODE=$(curl -s -o /tmp/swift_zarr_resp -w "%{http_code}" \
   -H "X-Auth-Token: $TOKEN" \
   "$TEST_PATH")
