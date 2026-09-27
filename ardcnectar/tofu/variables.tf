@@ -71,8 +71,8 @@ variable "admin_email" {
 
 variable "swift_container" {
   description = "Swift object-store container holding mosaic.zarr. Prod = \"main\"; a second tier uses its own container."
-  type = string
-  default = "main"
+  type        = string
+  default     = "main"
 }
 
 variable "app_cred_auth_url" {
