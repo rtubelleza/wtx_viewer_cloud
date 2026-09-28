@@ -29,7 +29,7 @@ for var in OS_AUTH_URL OS_APPLICATION_CREDENTIAL_ID OS_APPLICATION_CREDENTIAL_SE
     echo "FAIL  env var $var is not set" >&2
     MISSING=1
   else
-    echo "OK    $var=${val:0:8}..."
+    echo "OK    $var=$(printf %.8s "$val")..."
   fi
 done
 [ "$MISSING" -eq 1 ] && exit 1
@@ -50,7 +50,7 @@ if [ "$HTTP_CODE" != "201" ]; then
   exit 1
 fi
 TOKEN=$(grep -i "^x-subject-token:" /tmp/swift_test_headers | awk '{print $2}' | tr -d '\r\n')
-echo "OK    Token acquired (${TOKEN:0:8}...)"
+echo "OK    Token acquired ($(printf %.8s "$TOKEN")...)"
 
 echo ""
 echo "--- Test 2: Swift container reachable ---"
