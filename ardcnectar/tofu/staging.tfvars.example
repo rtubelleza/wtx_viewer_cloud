@@ -1,7 +1,7 @@
 # Staging tier. Copy to staging.tfvars (gitignored) and fill the <...> fields.
 # Use with backend key staging/terraform.tfstate, see ardcnectar/README.md.
 instance_name         = "wtx-viewer-staging"
-app_domain            = "staging.nsclc-spatial-atlas.cloud.edu.au."
+app_domain            = "<staging domain prefix>.nsclc-spatial-atlas.cloud.edu.au."
 swift_container       = "staging"
 admin_email           = "<admin email>"
 ssh_ingress_cidr      = "<admin IP>/32"
