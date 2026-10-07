@@ -81,7 +81,7 @@ variable "app_cred_auth_url" {
   default     = "https://keystone.rc.nectar.org.au/v3/"
 }
 
-# GitHub (prod)
+# GitHub
 variable "manage_github_secrets" {
   description = "Whether to manage the github_environment Environment with its SSH_PRIVATE_KEY and VM_IP secrets, plus the repository-wide SSH_PUBLIC_KEY variable. true in both prod and staging."
   type        = bool

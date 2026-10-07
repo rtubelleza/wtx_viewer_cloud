@@ -13,7 +13,7 @@ terraform {
       source  = "hashicorp/tls"
       version = "~> 4.0"
     }
-    # Manages GitHub Actions secrets/variables (prod only; skipped in staging).
+    # Manages GitHub Actions secrets/variables (when manage_github_secrets is true).
     github = {
       source  = "integrations/github"
       version = "~> 6.0"
