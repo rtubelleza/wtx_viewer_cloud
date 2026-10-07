@@ -6,5 +6,5 @@ swift_container       = "staging"
 admin_email           = "<admin email>"
 ssh_ingress_cidr      = "<admin IP>/32"
 app_https_cidr        = "<admin IP>/32"
-manage_github_secrets = false # true would make staging own the repo-level SSH_PUBLIC_KEY that prod already writes (github.tf)
+manage_github_secrets = true
 github_environment    = "staging"
