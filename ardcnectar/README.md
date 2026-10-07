@@ -42,20 +42,27 @@ Run `openstack ec2 credentials create`, and use the "access" and "secret" values
 |---|---|
 | `GITHUB_TOKEN` | Github token for github secrets|
 
-### 4. Create .tfvars specification in /tofu
-This defines the deployment instances. Can create one called `prod.tfvars` and define the following variables
-```terraform
-instance_name = "my_instance"
-app_domain = "myprefix.project-domain.cloud.edu.au"
-admin_email = "admin@project-domain.cloud.edu.au"
-manage_github_secrets = true
-
-app_https_cidr = 0.0.0.0/0 # allow internet access to the app viewer
+### 4. Create a .tfvars file per tier in /tofu
+Each tier has one `.tfvars` file. `*.tfvars` is gitignored, so copy the committed example and fill the `<...>` fields:
+```bash
+cp prod.tfvars.example prod.tfvars
+cp staging.tfvars.example staging.tfvars
 ```
 
 ### 5. Run OpenTofu
+Each tier has its own state, selected by the backend key.
+Always run `init` with the matching key before `plan` or `apply`, so one tier's vars never meet the other tier's state.
+
+Prod:
 ```bash
 tofu init -reconfigure -backend-config="key=prod/terraform.tfstate"
 tofu plan  -var-file=prod.tfvars
 tofu apply -var-file=prod.tfvars
+```
+
+Staging:
+```bash
+tofu init -reconfigure -backend-config="key=staging/terraform.tfstate"
+tofu plan  -var-file=staging.tfvars
+tofu apply -var-file=staging.tfvars
 ```

@@ -1,0 +1,10 @@
+# Prod tier. Copy to prod.tfvars (gitignored) and fill the <...> fields.
+# Use with backend key prod/terraform.tfstate, see ardcnectar/README.md.
+instance_name         = "<prod instance name>"
+app_domain            = "<prod domain>.nsclc-spatial-atlas.cloud.edu.au."
+swift_container       = "main"
+admin_email           = "<admin email>"
+ssh_ingress_cidr      = "<admin IP>/32"
+app_https_cidr        = "0.0.0.0/0"
+manage_github_secrets = true
+github_environment    = "production"
