@@ -3,7 +3,7 @@
 # deploy job runs. Secret names are unchanged; GitHub resolves them per
 # environment for any job that declares `environment:`.
 resource "github_repository_environment" "deploy" {
-  count       = var.manage_github_secrets ? 1 : 0 # 1: prod, 0: staging
+  count       = var.manage_github_secrets ? 1 : 0 # true in both tiers; each writes its own environment
   repository  = var.github_repository
   environment = var.github_environment
 

@@ -83,7 +83,7 @@ variable "app_cred_auth_url" {
 
 # GitHub (prod)
 variable "manage_github_secrets" {
-  description = "Whether to push SSH key + VM IP to GitHub Actions. true in prod, false in staging."
+  description = "Whether to manage the github_environment Environment with its SSH_PRIVATE_KEY and VM_IP secrets, plus the repository-wide SSH_PUBLIC_KEY variable. true in both prod and staging."
   type        = bool
   default     = false
 }
